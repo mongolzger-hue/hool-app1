@@ -39,7 +39,7 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
       setStep('success');
     } catch (err) {
       console.error('Error submitting payment claim:', err);
-      setError('Хүсэлт илгээхэд алдаа гарлаа. Та дахин оролдоно уу эсвэл админтай холбогдоно уу.');
+      setError(`Алдаа: ${err.message || 'Хүсэлт илгээж чадсангүй.'} (SQL хүснэгт үүссэн эсэхийг шалгана уу)`);
       setStep('info');
     }
   };

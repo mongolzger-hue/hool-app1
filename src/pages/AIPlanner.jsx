@@ -9,6 +9,7 @@ export default function AIPlanner() {
   const { addToCart } = useShopping();
   const [plan, setPlan] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState(null);
   const [goal, setGoal] = useState('maintain'); // maintain, lose, gain
 
   // Real AI Plan Generation
@@ -16,12 +17,17 @@ export default function AIPlanner() {
     if (!user?.profile) return;
     
     setIsGenerating(true);
+    setError(null);
     try {
       const newPlan = await generateMealPlan(user.profile, goal);
       setPlan(newPlan);
-    } catch (error) {
-      console.error("AI Planning Failed:", error);
-      window.alert("AI төлөвлөгөө үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.");
+    } catch (err) {
+      console.error('Error generating AI plan:', err);
+      const msg = err.message.includes("API key") 
+        ? "AI-ийн нууц түлхүүр (API Key) тохируулагдаагүй байна. Вэрсэл дээрх тохиргоогоо шалгана уу." 
+        : `AI-д алдаа гарлаа: ${err.message} (Сервер эсвэл API холболтыг шалгана уу)`;
+      setError(msg);
+      window.alert(msg);
     } finally {
       setIsGenerating(false);
     }

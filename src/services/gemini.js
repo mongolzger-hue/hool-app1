@@ -59,8 +59,13 @@ export async function generateMealPlan(userProfile, goal) {
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     
-    // Clean potential markdown code blocks
-    const jsonString = responseText.replace(/```json|```/g, "").trim();
+    // Clean potential markdown and extract only the JSON array part
+    const startIdx = responseText.indexOf('[');
+    const endIdx = responseText.lastIndexOf(']') + 1;
+    if (startIdx === -1 || endIdx === 0) {
+      throw new Error("AI-аас ирсэн хариулт буруу форматтай байна.");
+    }
+    const jsonString = responseText.substring(startIdx, endIdx);
     return JSON.parse(jsonString);
   } catch (error) {
     console.error("Gemini Meal Plan Error:", error);
