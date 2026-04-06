@@ -26,25 +26,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Standardized way to fetch profile and update session state
+  const fetchAndSetUser = async (sessionUser) => {
+    if (!sessionUser) {
+      setUser(null);
+      return null;
+    }
+
+    try {
+      const profile = await getProfile(sessionUser.id);
+      const userData = {
+        ...sessionUser,
+        ...profile,
+        name: profile?.name || sessionUser.user_metadata?.full_name || sessionUser.email.split('@')[0],
+        phone: profile?.phone || sessionUser.user_metadata?.phone || '',
+        isPremium: profile?.is_premium || false,
+        profile: profile?.profile_data || null,
+        joinDate: new Date(sessionUser.created_at).toLocaleDateString('mn-MN')
+      };
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      console.error('Error in fetchAndSetUser:', err);
+      setUser(sessionUser); // Fallback to basic user info
+      return sessionUser;
+    }
+  };
+
   useEffect(() => {
     // 1. Initial check
     const checkUser = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
-        
-        if (session?.user) {
-          const profile = await getProfile(session.user.id);
-          setUser({
-            ...session.user,
-            ...profile,
-            name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-            phone: profile?.phone || session.user.user_metadata?.phone || '',
-            isPremium: profile?.is_premium || false,
-            profile: profile?.profile_data || null,
-            joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
-          });
-        }
+        await fetchAndSetUser(session?.user);
       } catch (err) {
         console.error('Auth initialization error:', err);
       } finally {
@@ -56,26 +71,8 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        if (session?.user) {
-          const profile = await getProfile(session.user.id);
-          setUser({
-            ...session.user,
-            ...profile,
-            name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-            phone: profile?.phone || session.user.user_metadata?.phone || '',
-            isPremium: profile?.is_premium || false,
-            profile: profile?.profile_data || null,
-            joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
-          });
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error('Auth change handling error:', err);
-      } finally {
-        setLoading(false);
-      }
+      await fetchAndSetUser(session?.user);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -87,6 +84,11 @@ export const AuthProvider = ({ children }) => {
       password,
     });
     if (error) throw error;
+    
+    // Ensure state is updated before returning to the caller (fixes race conditions)
+    if (data.user) {
+      await fetchAndSetUser(data.user);
+    }
     return !!data.user;
   };
 
@@ -106,7 +108,7 @@ export const AuthProvider = ({ children }) => {
 
     if (data.user) {
       // Manually create profile if trigger is missing
-      const { error: profileError } = await supabase
+      await supabase
         .from('profiles')
         .insert({
           id: data.user.id,
@@ -117,9 +119,8 @@ export const AuthProvider = ({ children }) => {
           profile_data: null
         });
       
-      if (profileError) {
-        console.error('Error creating profile manually:', profileError);
-      }
+      // Update state before returning (fixes race conditions)
+      await fetchAndSetUser(data.user);
     }
 
     return !!data.user;
