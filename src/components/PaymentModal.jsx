@@ -8,8 +8,9 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
   // Bank Details - User can change these placeholders
   const bankDetails = {
     bankName: "Хаан Банк", 
-    accountNumber: "5012345678",
-    accountName: "Б. Бат-Эрдэнэ",
+    accountNumber: "5779326522",
+    iban: "MN43230005005779326522", // Хаан Банкны IBAN формат руу шилжүүлж орууллаа
+    accountName: "Nyambayar",
     description: user ? `${user.phone || user.name} - ${planName}` : "Ortskhon Subscription"
   };
 
@@ -51,6 +52,10 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
                 <div className="info-row">
                   <span>Дансны дугаар:</span>
                   <strong className="copyable">{bankDetails.accountNumber}</strong>
+                </div>
+                <div className="info-row">
+                  <span>IBAN:</span>
+                  <strong className="copyable">{bankDetails.iban}</strong>
                 </div>
                 <div className="info-row">
                   <span>Хүлээн авагч:</span>
