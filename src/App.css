@@ -1,0 +1,4 @@
+/* App-level overrides - minimal since index.css handles design system */
+#root {
+  width: 100%;
+}
