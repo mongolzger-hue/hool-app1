@@ -12,7 +12,7 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
     accountNumber: "5779326522",
     iban: "23000500 5779326522", 
     accountName: "Nyambayar",
-    description: user ? `${user.phone || user.name} - ${planName}` : "Ortskhon Subscription"
+    description: user ? `${user.phone || user.name || user.email?.split('@')[0] || 'User'} - ${planName}` : "Ortskhon Subscription"
   };
 
   const handleConfirmPayment = async () => {
