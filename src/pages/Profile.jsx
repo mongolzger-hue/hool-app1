@@ -29,14 +29,15 @@ export default function Profile() {
           <div className="profile-grid">
             <div className="profile-sidebar">
               <div className="profile-info card">
-                <div className="profile-avatar">
+                <div className={`profile-avatar ${user.isPremium ? 'premium' : ''}`}>
                   {user.name.charAt(0).toUpperCase()}
+                  {user.isPremium && <span className="premium-star">💎</span>}
                 </div>
                 <div className="profile-details">
                   <h3>{user.name}</h3>
                   <p>{user.email}</p>
                   <div className={`premium-badge ${user.isPremium ? 'active' : ''}`}>
-                    {user.isPremium ? '💎 Premium' : 'Free Member'}
+                    {user.isPremium ? '💎 Premium Member' : 'Стандарт хэрэглэгч'}
                   </div>
                   <p className="join-date">Нэгдсэн: {user.joinDate}</p>
                 </div>
@@ -47,6 +48,19 @@ export default function Profile() {
             </div>
 
             <div className="profile-main">
+              <div className="profile-section card" style={{ padding: 'var(--space-xl)' }}>
+                <h3>🔖 Миний Багц</h3>
+                <div className="subscription-status">
+                   <div className="status-label">Одоогийн багц:</div>
+                   <div className="status-value">{user.isPremium ? <strong style={{ color: '#FFA500' }}>👑 Премиум</strong> : 'Үнэгүй'}</div>
+                   <p className="status-desc">
+                     {user.isPremium 
+                       ? "Та бүх жорыг үзэх, AI зөвлөх ашиглах эрхтэй байна." 
+                       : "Та хязгаарлагдмал эрхтэй байна. Бүх боломжийг нээхийн тулд багцаа ахиулна уу."}
+                   </p>
+                </div>
+              </div>
+
               <div className="profile-section">
                 <div className="section-header">
                   <h3>❤️ Хадгалсан жорууд ({favRecipes.length})</h3>

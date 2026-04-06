@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import QPayModal from '../components/QPayModal';
+import { Link, useNavigate } from 'react-router-dom';
+import PaymentModal from '../components/PaymentModal';
+import { useAuth } from '../context/AuthContext';
 
 const plans = [
   {
@@ -57,8 +58,14 @@ const plans = [
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleBuy = (plan) => {
+    if (!user) {
+      navigate('/login', { state: { from: '/pricing' } });
+      return;
+    }
     setSelectedPlan(plan);
     setShowPayment(true);
   };
@@ -104,6 +111,10 @@ export default function Pricing() {
                   <Link to="/meal-plan" className="btn btn-secondary" style={{ width: '100%' }}>
                     Үнэгүй эхлэх
                   </Link>
+                ) : user?.isPremium ? (
+                  <button className="btn btn-outline disabled" style={{ width: '100%', opacity: 0.7 }}>
+                    Идэвхтэй байна
+                  </button>
                 ) : (
                   <button
                     className={`btn ${plan.featured ? 'btn-primary' : 'btn-accent'}`}
@@ -119,8 +130,8 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* QPay Payment Modal */}
-      <QPayModal 
+      {/* Payment Modal */}
+      <PaymentModal 
         isOpen={showPayment}
         onClose={() => setShowPayment(false)}
         planName={selectedPlan?.name}

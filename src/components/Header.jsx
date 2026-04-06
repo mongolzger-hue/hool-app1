@@ -38,7 +38,7 @@ export default function Header() {
       <div className="header-inner">
         <Link to="/" className="header-logo">
           <span className="header-logo-icon">🍽️</span>
-          Хоол
+          Орцхон
         </Link>
 
         {/* Action icons always visible */}
@@ -57,7 +57,10 @@ export default function Header() {
 
           {user ? (
             <Link to="/profile" className="header-icon-link" title="Профайл">
-              <div className="user-avatar-sm">{user.name.charAt(0).toUpperCase()}</div>
+              <div className={`user-avatar-sm ${user.isPremium ? 'premium' : ''}`}>
+                {user.name.charAt(0).toUpperCase()}
+                {user.isPremium && <span className="premium-star">💎</span>}
+              </div>
             </Link>
           ) : (
             <Link to="/login" className="header-icon-link" title="Нэвтрэх">👤</Link>
@@ -83,7 +86,7 @@ export default function Header() {
             </Link>
           ))}
           {user ? (
-             <Link to="/profile" className="header-cta" style={{ background: user.isPremium ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'var(--color-primary)' }}>
+             <Link to="/profile" className={`header-cta ${user.isPremium ? 'premium-cta' : ''}`}>
                {user.isPremium ? '💎 Premium' : 'Миний Профайл'}
              </Link>
           ) : (

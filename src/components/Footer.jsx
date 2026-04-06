@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <h3>🍽️ Хоол</h3>
+            <h3>🍽️ Орцхон</h3>
             <p>
               Монгол хоолны дэглэм барих, жор олох, бичлэг үзэх бүрэн
               платформ. Эрүүл хоолоор амьдралаа өөрчил.
@@ -31,7 +31,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          © 2026 Хоол. Бүх эрх хуулиар хамгаалагдсан.
+          © 2026 Орцхон. Бүх эрх хуулиар хамгаалагдсан.
         </div>
       </div>
     </footer>

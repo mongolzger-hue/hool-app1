@@ -33,7 +33,7 @@ export default function Recipes() {
       });
     } else {
       navigator.clipboard.writeText(
-        `${recipe.name}\n${recipe.description}\nХоол апп-с: ${window.location.href}`
+        `${recipe.name}\n${recipe.description}\nОрцхон апп-с: ${window.location.href}`
       );
       alert('Холбоосыг хуулсан! 📋');
     }
