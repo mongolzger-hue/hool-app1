@@ -1,28 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export default function PaymentModal({ isOpen, onClose, planName, price }) {
   const [step, setStep] = useState('info'); // info, processing, success
-  const { user, setPremium } = useAuth();
+  const { user } = useAuth();
+  const [error, setError] = useState(null);
 
-  // Bank Details - User can change these placeholders
   const bankDetails = {
     bankName: "Хаан Банк", 
     accountNumber: "5779326522",
-    iban: "MN43230005005779326522", // Хаан Банкны IBAN формат руу шилжүүлж орууллаа
+    iban: "MN43230005005779326522", 
     accountName: "Nyambayar",
     description: user ? `${user.phone || user.name} - ${planName}` : "Ortskhon Subscription"
   };
 
-  useEffect(() => {
-    if (step === 'processing') {
-      const timer = setTimeout(() => {
-        setStep('success');
-        setPremium(true);
-      }, 3000); 
-      return () => clearTimeout(timer);
+  const handleConfirmPayment = async () => {
+    if (!user) return;
+    
+    setStep('processing');
+    setError(null);
+
+    try {
+      // Create a claim in the database
+      const { error: claimError } = await supabase
+        .from('payment_claims')
+        .insert({
+          user_id: user.id,
+          user_email: user.email,
+          user_phone: user.phone,
+          plan_name: planName,
+          price: price
+        });
+
+      if (claimError) throw claimError;
+
+      // Set to success (which is now "pending verification" in UI)
+      setStep('success');
+    } catch (err) {
+      console.error('Error submitting payment claim:', err);
+      setError('Хүсэлт илгээхэд алдаа гарлаа. Та дахин оролдоно уу эсвэл админтай холбогдоно уу.');
+      setStep('info');
     }
-  }, [step, setPremium]);
+  };
 
   if (!isOpen) return null;
 
@@ -33,25 +53,25 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
         
         <div className="payment-header">
           <div className="payment-icon">💳</div>
-          <h3>Төлбөр Шилжүүлэх</h3>
+          <h3>Төлбөр Шилжүүлэх Заавар</h3>
         </div>
 
         <div className="payment-body">
           {step === 'info' && (
             <>
               <div className="plan-summary">
-                <p>Та <strong>{planName}</strong> багцыг сонгосон байна.</p>
+                <p>Таны сонгосон <strong>{planName}</strong> багц</p>
                 <div className="price-tag">{price}</div>
               </div>
 
-              <div className="bank-info-card">
+              <div className="bank-info-card highlighted">
                 <div className="info-row">
                   <span>Банк:</span>
                   <strong>{bankDetails.bankName}</strong>
                 </div>
                 <div className="info-row">
                   <span>Дансны дугаар:</span>
-                  <strong className="copyable">{bankDetails.accountNumber}</strong>
+                  <strong className="copyable highlight">{bankDetails.accountNumber}</strong>
                 </div>
                 <div className="info-row">
                   <span>IBAN:</span>
@@ -61,27 +81,39 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
                   <span>Хүлээн авагч:</span>
                   <strong>{bankDetails.accountName}</strong>
                 </div>
-                <div className="info-row">
-                  <span>Гүйлгээний утга:</span>
-                  <strong className="accent-text">{bankDetails.description}</strong>
+                <div className="info-row description-row">
+                  <span>Гүйлгээний утга (ЧУХАЛ!):</span>
+                  <strong className="accent-text highlight">{bankDetails.description}</strong>
                 </div>
               </div>
               
               <div className="qr-section">
                 <p className="qr-title">Эсвэл QR уншуулна уу:</p>
                 <div className="qr-box">
-                  {/* Placeholder for Social Pay / Bank QR */}
                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=BANK_TRANSFER_DEMO" alt="QR Code" />
-                  <div className="qr-badge">Social Pay / QR</div>
+                  <div className="qr-badge">Social Pay / Khan Bank</div>
                 </div>
               </div>
 
-              <div className="payment-notice">
-                ⚠️ Гүйлгээний утга дээр <strong>өөрийн нэр эсвэл утсаа</strong> заавал бичээрэй.
+              <div className="payment-guide">
+                <div className="guide-step">
+                  <div className="step-num">1</div>
+                  <div className="step-text">Дээрх данс руу <strong>{price}</strong>-ийг шилжүүлнэ үү.</div>
+                </div>
+                <div className="guide-step">
+                  <div className="step-num">2</div>
+                  <div className="step-text">Гүйлгээний утга дээр <strong>{bankDetails.description}</strong>-г заавал бичнэ.</div>
+                </div>
+                <div className="guide-step">
+                  <div className="step-num">3</div>
+                  <div className="step-text">Шилжүүлэг дууссаны дараа доорх товчийг дарж хүсэлтээ илгээнэ үү.</div>
+                </div>
               </div>
 
-              <button className="btn btn-primary btn-block" onClick={() => setStep('processing')}>
-                Төлбөр төлсөн
+              {error && <div className="alert alert-error">{error}</div>}
+
+              <button className="btn btn-primary btn-block" onClick={handleConfirmPayment}>
+                Төлбөр төлсөн, мэдэгдэх
               </button>
             </>
           )}
@@ -89,19 +121,22 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
           {step === 'processing' && (
             <div className="processing-state">
               <div className="spinner"></div>
-              <h3>Төлбөр шалгаж байна...</h3>
-              <p>Та түр хүлээнэ үү. Бид таны шилжүүлгийг шалгаж байна.</p>
-              <p className="sim-hint">(Энэ хэсэг нь Demo систем тул 3 секундын дараа автоматаар батлагдана)</p>
+              <h3>Хүсэлт илгээж байна...</h3>
+              <p>Төлбөрийн мэдээллийг хянахаар илгээж байна.</p>
             </div>
           )}
 
           {step === 'success' && (
             <div className="success-state">
-              <div className="success-icon">✨</div>
-              <h3>Баяр хүргэе!</h3>
-              <p>Таны <strong>{planName}</strong> эрх амжилттай идэвхжлээ. Одоо та бүх боломжийг ашиглах боломжтой.</p>
+              <div className="success-icon notice">📡</div>
+              <h3>Хүсэлт бүртгэгдлээ!</h3>
+              <p>Таны төлбөрийн мэдээлэл системд амжилттай бүртгэгдлээ.</p>
+              <div className="success-info-box">
+                 <p>Админ таны гүйлгээг шалгаад <strong>4-5 минутын дотор</strong> таны Премиум эрхийг идэвхжүүлэх болно.</p>
+                 <small>Түр хүлээнэ үү, баярлалаа!</small>
+              </div>
               <button className="btn btn-primary btn-block" onClick={onClose}>
-                Ашиглаж эхлэх
+                Ойлголоо
               </button>
             </div>
           )}
