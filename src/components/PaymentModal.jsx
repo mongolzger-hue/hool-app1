@@ -10,7 +10,7 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
   const bankDetails = {
     bankName: "Хаан Банк", 
     accountNumber: "5779326522",
-    iban: "MN43230005005779326522", 
+    iban: "23000500 5779326522", 
     accountName: "Nyambayar",
     description: user ? `${user.phone || user.name} - ${planName}` : "Ortskhon Subscription"
   };
@@ -84,14 +84,6 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
                 <div className="info-row description-row">
                   <span>Гүйлгээний утга (ЧУХАЛ!):</span>
                   <strong className="accent-text highlight">{bankDetails.description}</strong>
-                </div>
-              </div>
-              
-              <div className="qr-section">
-                <p className="qr-title">Эсвэл QR уншуулна уу:</p>
-                <div className="qr-box">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=BANK_TRANSFER_DEMO" alt="QR Code" />
-                  <div className="qr-badge">Social Pay / Khan Bank</div>
                 </div>
               </div>
 
