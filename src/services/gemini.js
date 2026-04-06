@@ -11,7 +11,7 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 export async function analyzeIngredients(base64Image) {
   try {
     if (!genAI) throw new Error("Gemini API key is not configured.");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
     
     const prompt = "List the food ingredients you see in this image. Return only a comma-separated list of ingredient names in Mongolian. Do not include any other text.";
     
@@ -42,7 +42,7 @@ export async function analyzeIngredients(base64Image) {
 export async function generateMealPlan(userProfile, goal) {
   try {
     if (!genAI) throw new Error("Gemini API key is not configured.");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
     
     const targetCals = goal === 'lose' ? userProfile.lose : goal === 'gain' ? userProfile.gain : userProfile.tdee;
     
