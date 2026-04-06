@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useShopping } from '../context/ShoppingContext';
-import { recipes } from '../data/recipes';
+import { generateMealPlan } from '../services/gemini';
 
 export default function AIPlanner() {
   const { user } = useAuth();
@@ -12,41 +12,20 @@ export default function AIPlanner() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [goal, setGoal] = useState('maintain'); // maintain, lose, gain
 
-  // Generate a random plan based on target calories
-  const generatePlan = () => {
+  // Real AI Plan Generation
+  const generatePlan = async () => {
     if (!user?.profile) return;
     
     setIsGenerating(true);
-    
-    // Target calories based on goal
-    let targetCals = user.profile.tdee;
-    if (goal === 'lose') targetCals = user.profile.lose;
-    if (goal === 'gain') targetCals = user.profile.gain;
-
-    const days = ['Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба', 'Ням'];
-    
-    // Helper to get random recipe by category and approx calories
-    const getRandomMeal = (category, maxCals) => {
-      const filtered = recipes.filter(r => r.category === category || (category === 'Snack' && (r.category === 'Зууш' || r.category === 'Амттан' || r.category === 'Цагаан идээ')));
-      if (filtered.length === 0) return recipes[Math.floor(Math.random() * recipes.length)];
-      return filtered[Math.floor(Math.random() * filtered.length)];
-    };
-
-    const newPlan = days.map(day => ({
-      day,
-      meals: {
-        breakfast: getRandomMeal('Өглөөний', targetCals * 0.2),
-        lunch: getRandomMeal('Өдөр тутмын', targetCals * 0.4),
-        dinner: getRandomMeal('Шөл', targetCals * 0.3),
-        snack: getRandomMeal('Snack', targetCals * 0.1)
-      }
-    }));
-
-    // Simulate AI thinking
-    setTimeout(() => {
+    try {
+      const newPlan = await generateMealPlan(user.profile, goal);
       setPlan(newPlan);
+    } catch (error) {
+      console.error("AI Planning Failed:", error);
+      alert("AI төлөвлөгөө үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.");
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   useEffect(() => {

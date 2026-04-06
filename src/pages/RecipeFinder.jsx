@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { recipes } from '../data/recipes';
+import { analyzeIngredients } from '../services/gemini';
 
 export default function RecipeFinder() {
   const [image, setImage] = useState(null);
@@ -11,9 +12,8 @@ export default function RecipeFinder() {
   const fileRef = useRef();
   const cameraRef = useRef();
 
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     if (!file) return;
-    // Some mobile cameras return ambiguous mime types, let's be more lenient
     if (!file.type.startsWith('image/') && !file.name.match(/\.(jpg|jpeg|png|webp|heic)$/i)) {
       alert('Зөвхөн зураг оруулна уу (JPG, PNG, HEIC)');
       return;
@@ -24,29 +24,31 @@ export default function RecipeFinder() {
     setDetectedIngredients([]);
 
     const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target.result);
+    reader.onload = async (e) => {
+      const base64Image = e.target.result;
+      setImagePreview(base64Image);
+
+      // Real AI analysis
+      setAnalyzing(true);
+      try {
+        const ingredients = await analyzeIngredients(base64Image);
+        setDetectedIngredients(ingredients);
+        
+        // Find a matching recipe or just suggest a random one from our data for now
+        // Based on the first few ingredients
+        const matched = recipes.find(r => 
+          ingredients.some(ing => r.name.toLowerCase().includes(ing.toLowerCase()) || r.description.toLowerCase().includes(ing.toLowerCase()))
+        );
+        
+        setResult(matched || recipes[Math.floor(Math.random() * recipes.length)]);
+      } catch (error) {
+        console.error("AI Analysis Failed:", error);
+        alert("Зураг шинжлэхэд алдаа гарлаа. Дахин оролдоно уу.");
+      } finally {
+        setAnalyzing(false);
+      }
+    };
     reader.readAsDataURL(file);
-
-    // Simulate AI analysis steps
-    setAnalyzing(true);
-    
-    // Step-by-step ingredient detection
-    const possibleIngredients = ['Үхрийн мах', 'Гурил', 'Сонгино', 'Лууван', 'Төмс', 'Сарамсаг', 'Байцаа'];
-    
-    setTimeout(() => {
-      setDetectedIngredients([possibleIngredients[0], possibleIngredients[2]]); // Meat, onion
-    }, 800);
-
-    setTimeout(() => {
-      setDetectedIngredients(prev => [...prev, possibleIngredients[1], possibleIngredients[4]]); // Flour, potato
-    }, 1600);
-
-    setTimeout(() => {
-      setAnalyzing(false);
-      // Pick a random recipe as the "AI result"
-      const randomIndex = Math.floor(Math.random() * recipes.length);
-      setResult(recipes[randomIndex]);
-    }, 3000);
   };
 
   const handleDrop = (e) => {
