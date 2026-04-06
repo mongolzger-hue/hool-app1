@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 /**
  * Analyzes an image to detect food ingredients.
@@ -10,6 +10,7 @@ const genAI = new GoogleGenerativeAI(API_KEY);
  */
 export async function analyzeIngredients(base64Image) {
   try {
+    if (!genAI) throw new Error("Gemini API key is not configured.");
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = "List the food ingredients you see in this image. Return only a comma-separated list of ingredient names in Mongolian. Do not include any other text.";
@@ -40,6 +41,7 @@ export async function analyzeIngredients(base64Image) {
  */
 export async function generateMealPlan(userProfile, goal) {
   try {
+    if (!genAI) throw new Error("Gemini API key is not configured.");
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const targetCals = goal === 'lose' ? userProfile.lose : goal === 'gain' ? userProfile.gain : userProfile.tdee;

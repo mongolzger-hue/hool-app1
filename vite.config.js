@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'pwa-icon.png', 'hero.png'],
+      includeAssets: ['favicon.png', 'pwa-icon.png', 'hero.png'],
       manifest: {
         name: 'Орцхон - Эрүүл Хооллолтын Хөтөч',
         short_name: 'Орцхон',

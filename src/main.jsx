@@ -12,7 +12,7 @@ const updateSW = registerSW({
     }
   },
   onOfflineReady() {
-    console.log('Апп офлайн горимд ажиллахад бэлэн боллоо.');
+    // App is ready for offline use
   },
 });
 
