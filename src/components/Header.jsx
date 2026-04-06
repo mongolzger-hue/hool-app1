@@ -36,7 +36,7 @@ export default function Header() {
   return (
     <header className={`header ${scrolled ? 'scrolled' : ''}`}>
       <div className="header-inner">
-        <Link to="/" className="header-logo">
+        <Link to="/" className="header-logo" data-testid="header-logo">
           <span className="header-logo-icon">🍽️</span>
           Орцхон
         </Link>
@@ -51,6 +51,7 @@ export default function Header() {
             className="theme-toggle"
             onClick={toggleTheme}
             aria-label="Горим солих"
+            data-testid="theme-toggle"
           >
             {dark ? '☀️' : '🌙'}
           </button>
@@ -81,6 +82,7 @@ export default function Header() {
               key={item.path}
               to={item.path}
               className={location.pathname === item.path ? 'active' : ''}
+              data-testid={`nav-link-${item.path.replace('/', '') || 'home'}`}
             >
               {item.label}
             </Link>

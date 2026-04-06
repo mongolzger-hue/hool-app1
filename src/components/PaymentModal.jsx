@@ -10,7 +10,7 @@ export default function PaymentModal({ isOpen, onClose, planName, price }) {
     bankName: "Хаан Банк", 
     accountNumber: "5012345678",
     accountName: "Б. Бат-Эрдэнэ",
-    description: user ? `${user.name} - ${planName}` : "Hool App Subscription"
+    description: user ? `${user.phone || user.name} - ${planName}` : "Ortskhon Subscription"
   };
 
   useEffect(() => {

@@ -5,13 +5,22 @@ import { useAuth } from '../context/AuthContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (login(email, password)) {
+    setLoading(true);
+    setError(null);
+    try {
+      await login(email, password);
       navigate('/profile');
+    } catch (err) {
+      setError(err.message || 'Нэвтрэхэд алдаа гарлаа');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,6 +41,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required 
+                data-testid="login-email"
               />
             </div>
             <div className="form-group">
@@ -42,9 +52,10 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required 
+                data-testid="login-password"
               />
             </div>
-            <button type="submit" className="btn btn-primary btn-block">
+            <button type="submit" className="btn btn-primary btn-block" data-testid="login-submit">
               Нэвтрэх
             </button>
           </form>

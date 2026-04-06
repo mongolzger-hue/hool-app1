@@ -1,27 +1,59 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 const FavoritesContext = createContext();
 
 export function FavoritesProvider({ children }) {
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const saved = localStorage.getItem('hool-favorites');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const { user } = useAuth();
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem('hool-favorites', JSON.stringify(favorites));
-  }, [favorites]);
+    if (user) {
+      fetchFavorites();
+    } else {
+      setFavorites([]);
+    }
+  }, [user]);
 
-  const toggleFavorite = (recipeId) => {
-    setFavorites((prev) =>
-      prev.includes(recipeId)
-        ? prev.filter((id) => id !== recipeId)
-        : [...prev, recipeId]
-    );
+  const fetchFavorites = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_favorites')
+        .select('recipe_id')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      setFavorites(data.map(f => f.recipe_id));
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (recipeId) => {
+    if (!user) return;
+
+    const isAlreadyFav = favorites.includes(recipeId);
+    
+    try {
+      if (isAlreadyFav) {
+        const { error } = await supabase
+          .from('user_favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('recipe_id', recipeId);
+        if (error) throw error;
+        setFavorites(prev => prev.filter(id => id !== recipeId));
+      } else {
+        const { error } = await supabase
+          .from('user_favorites')
+          .insert({ user_id: user.id, recipe_id: recipeId });
+        if (error) throw error;
+        setFavorites(prev => [...prev, recipeId]);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   const isFavorite = (recipeId) => favorites.includes(recipeId);

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
@@ -8,51 +9,115 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulated check from localStorage
-    const savedUser = localStorage.getItem('hool_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+  // Fetch full profile (premium status, etc) from DB
+  const getProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return null;
     }
-    setLoading(false);
+  };
+
+  useEffect(() => {
+    // 1. Initial check
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const profile = await getProfile(session.user.id);
+        setUser({
+          ...session.user,
+          ...profile,
+          name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          phone: profile?.phone || session.user.user_metadata?.phone || '',
+          isPremium: profile?.is_premium || false,
+          profile: profile?.profile_data || null,
+          joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
+        });
+      }
+      setLoading(false);
+    };
+
+    checkUser();
+
+    // 2. Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const profile = await getProfile(session.user.id);
+        setUser({
+          ...session.user,
+          ...profile,
+          name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          phone: profile?.phone || session.user.user_metadata?.phone || '',
+          isPremium: profile?.is_premium || false,
+          profile: profile?.profile_data || null,
+          joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (email, password) => {
-    // Simulated login logic
-    const userData = {
-      id: 'user_123',
+  const login = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      name: email.split('@')[0],
-      isPremium: false,
-      joinDate: new Date().toLocaleDateString('mn-MN')
-    };
-    setUser(userData);
-    localStorage.setItem('hool_user', JSON.stringify(userData));
-    return true;
+      password,
+    });
+    if (error) throw error;
+    return !!data.user;
   };
 
-  const register = (email, password) => {
-    // Simulated registration
-    return login(email, password);
+  const register = async (email, password, fullName, phone) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          phone: phone,
+        },
+      },
+    });
+    if (error) throw error;
+    return !!data.user;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('hool_user');
   };
 
-  const setPremium = (status) => {
+  const setPremium = async (status) => {
     if (!user) return;
-    const updatedUser = { ...user, isPremium: status };
-    setUser(updatedUser);
-    localStorage.setItem('hool_user', JSON.stringify(updatedUser));
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_premium: status })
+      .eq('id', user.id);
+    
+    if (error) console.error('Error updating premium:', error);
+    else setUser(prev => ({ ...prev, isPremium: status }));
   };
 
-  const updateProfile = (profileData) => {
+  const updateProfile = async (profileData) => {
     if (!user) return;
-    const updatedUser = { ...user, profile: profileData };
-    setUser(updatedUser);
-    localStorage.setItem('hool_user', JSON.stringify(updatedUser));
+    const { error } = await supabase
+      .from('profiles')
+      .update({ profile_data: profileData })
+      .eq('id', user.id);
+    
+    if (error) console.error('Error updating profile:', error);
+    else setUser(prev => ({ ...prev, profile: profileData }));
   };
 
   return (

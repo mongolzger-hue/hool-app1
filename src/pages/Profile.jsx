@@ -36,6 +36,7 @@ export default function Profile() {
                 <div className="profile-details">
                   <h3>{user.name}</h3>
                   <p>{user.email}</p>
+                  {user.phone && <p className="profile-phone">📞 {user.phone}</p>}
                   <div className={`premium-badge ${user.isPremium ? 'active' : ''}`}>
                     {user.isPremium ? '💎 Premium Member' : 'Стандарт хэрэглэгч'}
                   </div>
