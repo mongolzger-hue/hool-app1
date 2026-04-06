@@ -1911,6 +1911,25 @@ ul, ol {
   padding: var(--space-2xl);
 }
 
+.auth-error {
+  background: rgba(211, 47, 47, 0.1);
+  color: var(--color-error);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  border: 1px solid rgba(211, 47, 47, 0.2);
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
 .auth-header {
   text-align: center;
   margin-bottom: var(--space-xl);

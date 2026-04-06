@@ -29,41 +29,53 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // 1. Initial check
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const profile = await getProfile(session.user.id);
-        setUser({
-          ...session.user,
-          ...profile,
-          name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-          phone: profile?.phone || session.user.user_metadata?.phone || '',
-          isPremium: profile?.is_premium || false,
-          profile: profile?.profile_data || null,
-          joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
-        });
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        if (session?.user) {
+          const profile = await getProfile(session.user.id);
+          setUser({
+            ...session.user,
+            ...profile,
+            name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+            phone: profile?.phone || session.user.user_metadata?.phone || '',
+            isPremium: profile?.is_premium || false,
+            profile: profile?.profile_data || null,
+            joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
+          });
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkUser();
 
     // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const profile = await getProfile(session.user.id);
-        setUser({
-          ...session.user,
-          ...profile,
-          name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-          phone: profile?.phone || session.user.user_metadata?.phone || '',
-          isPremium: profile?.is_premium || false,
-          profile: profile?.profile_data || null,
-          joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
-        });
-      } else {
-        setUser(null);
+      try {
+        if (session?.user) {
+          const profile = await getProfile(session.user.id);
+          setUser({
+            ...session.user,
+            ...profile,
+            name: profile?.name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+            phone: profile?.phone || session.user.user_metadata?.phone || '',
+            isPremium: profile?.is_premium || false,
+            profile: profile?.profile_data || null,
+            joinDate: new Date(session.user.created_at).toLocaleDateString('mn-MN')
+          });
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error('Auth change handling error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

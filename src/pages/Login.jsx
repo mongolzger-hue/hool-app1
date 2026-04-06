@@ -32,6 +32,9 @@ export default function Login() {
             <h2>Нэвтрэх</h2>
             <p>Хоолны дэглэмээ хянахын тулд нэвтэрнэ үү</p>
           </div>
+
+          {error && <div className="auth-error">{error}</div>}
+          
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Имэйл хаяг</label>
@@ -55,8 +58,8 @@ export default function Login() {
                 data-testid="login-password"
               />
             </div>
-            <button type="submit" className="btn btn-primary btn-block" data-testid="login-submit">
-              Нэвтрэх
+            <button type="submit" className="btn btn-primary btn-block" disabled={loading} data-testid="login-submit">
+              {loading ? 'Уншиж байна...' : 'Нэвтрэх'}
             </button>
           </form>
           <div className="auth-footer">
