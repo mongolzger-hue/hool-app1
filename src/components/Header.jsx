@@ -58,9 +58,9 @@ export default function Header() {
 
           {user ? (
             <Link to="/profile" className="header-icon-link" title="Профайл">
-              <div className={`user-avatar-sm ${user.isPremium ? 'premium' : ''}`}>
-                {user.name.charAt(0).toUpperCase()}
-                {user.isPremium && <span className="premium-star">💎</span>}
+              <div className={`user-avatar-sm ${user?.isPremium ? 'premium' : ''}`}>
+                {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+                {user?.isPremium && <span className="premium-star">💎</span>}
               </div>
             </Link>
           ) : (

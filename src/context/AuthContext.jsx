@@ -47,10 +47,14 @@ export const AuthProvider = ({ children }) => {
       
       console.log('[AuthContext] Profile fetched:', !!profile);
       
+      const safeName = profile?.name || 
+                        sessionUser.user_metadata?.full_name || 
+                        (sessionUser.email ? sessionUser.email.split('@')[0] : 'Хэрэглэгч');
+
       const userData = {
         ...sessionUser,
         ...profile,
-        name: profile?.name || sessionUser.user_metadata?.full_name || sessionUser.email.split('@')[0],
+        name: safeName,
         phone: profile?.phone || sessionUser.user_metadata?.phone || '',
         isPremium: profile?.is_premium || false,
         profile: profile?.profile_data || null,

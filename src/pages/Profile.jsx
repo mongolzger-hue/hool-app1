@@ -48,18 +48,18 @@ export default function Profile() {
           <div className="profile-grid">
             <div className="profile-sidebar">
               <div className="profile-info card">
-                <div className={`profile-avatar ${user.isPremium ? 'premium' : ''}`}>
-                  {user.name.charAt(0).toUpperCase()}
-                  {user.isPremium && <span className="premium-star">💎</span>}
+                <div className={`profile-avatar ${user?.isPremium ? 'premium' : ''}`}>
+                  {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+                  {user?.isPremium && <span className="premium-star">💎</span>}
                 </div>
                 <div className="profile-details">
-                  <h3>{user.name}</h3>
-                  <p>{user.email}</p>
-                  {user.phone && <p className="profile-phone">📞 {user.phone}</p>}
-                  <div className={`premium-badge ${user.isPremium ? 'active' : ''}`}>
-                    {user.isPremium ? '💎 Premium Member' : 'Стандарт хэрэглэгч'}
+                  <h3>{user?.name || 'Хэрэглэгч'}</h3>
+                  <p>{user?.email}</p>
+                  {user?.phone && <p className="profile-phone">📞 {user?.phone}</p>}
+                  <div className={`premium-badge ${user?.isPremium ? 'active' : ''}`}>
+                    {user?.isPremium ? '💎 Premium Member' : 'Стандарт хэрэглэгч'}
                   </div>
-                  <p className="join-date">Нэгдсэн: {user.joinDate}</p>
+                  <p className="join-date">Нэгдсэн: {user?.joinDate}</p>
                 </div>
                 <div className="profile-actions">
                   <button 
