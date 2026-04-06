@@ -101,7 +101,27 @@ export const AuthProvider = ({ children }) => {
         },
       },
     });
+
     if (error) throw error;
+
+    if (data.user) {
+      // Manually create profile if trigger is missing
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          name: fullName,
+          email: email,
+          phone: phone,
+          is_premium: false,
+          profile_data: null
+        });
+      
+      if (profileError) {
+        console.error('Error creating profile manually:', profileError);
+      }
+    }
+
     return !!data.user;
   };
 
