@@ -8,10 +8,15 @@ export const ShoppingProvider = ({ children }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    // Load from localStorage
-    const savedItems = localStorage.getItem('hool_shopping_list');
-    if (savedItems) {
-      setItems(JSON.parse(savedItems));
+    // Load from localStorage safely
+    try {
+      const savedItems = localStorage.getItem('hool_shopping_list');
+      if (savedItems) {
+        setItems(JSON.parse(savedItems));
+      }
+    } catch (err) {
+      console.error('Error parsing shopping list from localStorage:', err);
+      localStorage.removeItem('hool_shopping_list'); // Clear corrupt data
     }
   }, []);
 
