@@ -6,7 +6,10 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <h3>🍽️ Орцхон</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+              <img src="/pwa-icon.png" alt="Ortskhon Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+              <h3 style={{ margin: 0 }}>Орцхон</h3>
+            </div>
             <p>
               Монгол хоолны дэглэм барих, жор олох, бичлэг үзэх бүрэн
               платформ. Эрүүл хоолоор амьдралаа өөрчил.

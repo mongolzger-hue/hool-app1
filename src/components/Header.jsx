@@ -37,7 +37,7 @@ export default function Header() {
     <header className={`header ${scrolled ? 'scrolled' : ''}`}>
       <div className="header-inner">
         <Link to="/" className="header-logo" data-testid="header-logo">
-          <span className="header-logo-icon">🍽️</span>
+          <img src="/pwa-icon.png" alt="Ortskhon Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
           Орцхон
         </Link>
 
