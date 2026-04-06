@@ -1,65 +1,90 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 /**
- * Analyzes an image to detect food ingredients.
- * @param {string} base64Image - The base64 encoded image string.
- * @returns {Promise<string[]>} - A list of detected ingredients.
+ * Common fetch wrapper for Gemini REST API (v1)
  */
-export async function analyzeIngredients(base64Image) {
+async function callGeminiAPI(model, requestBody) {
+  if (!API_KEY) throw new Error("Gemini API key is not configured in environment variables.");
+
+  // Using stable v1 API version directly
+  const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${API_KEY}`;
+  
   try {
-    if (!genAI) throw new Error("Gemini API key is not configured.");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Gemini API HTTP Error:", errorData);
+      throw new Error(errorData.error?.message || `HTTP Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
     
-    const prompt = "List the food ingredients you see in this image. Return only a comma-separated list of ingredient names in Mongolian. Do not include any other text.";
-    
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: base64Image.split(",")[1],
-          mimeType: "image/jpeg"
-        }
-      }
-    ]);
-    
-    const text = result.response.text();
-    return text.split(",").map(item => item.trim()).filter(item => item !== "");
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error("AI-аас хариулт ирсэнгүй. (No candidates found)");
+    }
+
+    return data.candidates[0].content.parts[0].text;
   } catch (error) {
-    console.error("Gemini Image Analysis Error:", error);
+    console.error(`Gemini API Call Failed (${model}):`, error);
     throw error;
   }
 }
 
 /**
+ * Analyzes an image to detect food ingredients.
+ */
+export async function analyzeIngredients(base64Image) {
+  const requestBody = {
+    contents: [{
+      parts: [
+        { text: "List the food ingredients you see in this image. Return only a comma-separated list of ingredient names in Mongolian. Do not include any other text." },
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: base64Image.split(",")[1]
+          }
+        }
+      ]
+    }]
+  };
+
+  const text = await callGeminiAPI("gemini-1.5-flash", requestBody);
+  return text.split(",").map(item => item.trim()).filter(item => item !== "");
+}
+
+/**
  * Generates a 7-day meal plan based on user profile and goals.
- * @param {object} userProfile - User data (TDEE, goals, etc.)
- * @param {string} goal - maintain, lose, or gain
- * @returns {Promise<object[]>} - A 7-day meal plan array.
  */
 export async function generateMealPlan(userProfile, goal) {
+  const targetCals = goal === 'lose' ? userProfile.lose : goal === 'gain' ? userProfile.gain : userProfile.tdee;
+  
+  const prompt = `Generate a 7-day healthy meal plan for a person with a daily calorie target of ${targetCals} kcal. 
+  The goal is ${goal}. 
+  Focus on Mongolian style but healthy meals. 
+  Return the result ONLY as a JSON array of 7 objects. 
+  Each object must have: 
+  - "day": Name of the day in Mongolian (e.g., "Даваа")
+  - "meals": An object with "breakfast", "lunch", "dinner", "snack"
+  - Each meal must have "name" (Mongolian name), "calories" (number), "protein" (g), "fat" (g), "carbs" (g), "ingredients" (array of Mongolian strings), "steps" (array of instructions).
+  Do not include any markdown formatting or extra text outside the JSON.`;
+
+  const requestBody = {
+    contents: [{
+      parts: [{ text: prompt }]
+    }]
+  };
+
+  const responseText = await callGeminiAPI("gemini-1.5-flash", requestBody);
+  
+  // Robust JSON extraction
   try {
-    if (!genAI) throw new Error("Gemini API key is not configured.");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-    
-    const targetCals = goal === 'lose' ? userProfile.lose : goal === 'gain' ? userProfile.gain : userProfile.tdee;
-    
-    const prompt = `Generate a 7-day healthy meal plan for a person with a daily calorie target of ${targetCals} kcal. 
-    The goal is ${goal}. 
-    Focus on Mongolian style but healthy meals. 
-    Return the result ONLY as a JSON array of 7 objects. 
-    Each object must have: 
-    - "day": Name of the day in Mongolian (e.g., "Даваа")
-    - "meals": An object with "breakfast", "lunch", "dinner", "snack"
-    - Each meal must have "name" (Mongolian name), "calories" (number), "protein" (g), "fat" (g), "carbs" (g), "ingredients" (array of Mongolian strings), "steps" (array of instructions).
-    Do not include any markdown formatting or extra text outside the JSON.`;
-    
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    
-    // Clean potential markdown and extract only the JSON array part
     const startIdx = responseText.indexOf('[');
     const endIdx = responseText.lastIndexOf(']') + 1;
     if (startIdx === -1 || endIdx === 0) {
@@ -67,8 +92,8 @@ export async function generateMealPlan(userProfile, goal) {
     }
     const jsonString = responseText.substring(startIdx, endIdx);
     return JSON.parse(jsonString);
-  } catch (error) {
-    console.error("Gemini Meal Plan Error:", error);
-    throw error;
+  } catch (parseError) {
+    console.error("JSON Parsing Error from Gemini:", responseText);
+    throw new Error("AI-аас ирсэн төлөвлөгөөг уншиж чадсангүй.");
   }
 }
