@@ -42,8 +42,11 @@ export default function RecipeFinder() {
         
         setResult(matched || recipes[Math.floor(Math.random() * recipes.length)]);
       } catch (error) {
-        console.error("AI Analysis Failed:", error);
-        window.alert("Зураг шинжлэхэд алдаа гарлаа. Дахин оролдоно уу.");
+        console.error('Error analyzing image:', error);
+        const msg = error.message.includes("API key") 
+          ? "AI-ийн нууц түлхүүр (API Key) тохируулагдаагүй байна. Вэрсэл дээрх тохиргоогоо шалгана уу." 
+          : `Зураг шинжлэхэд алдаа гарлаа: ${error.message} (Дахин оролдоно уу)`;
+        window.alert(msg);
       } finally {
         setAnalyzing(false);
       }
