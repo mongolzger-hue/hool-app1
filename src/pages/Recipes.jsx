@@ -35,7 +35,7 @@ export default function Recipes() {
       navigator.clipboard.writeText(
         `${recipe.name}\n${recipe.description}\nОрцхон апп-с: ${window.location.href}`
       );
-      alert('Холбоосыг хуулсан! 📋');
+      window.alert('Холбоосыг хуулсан! 📋');
     }
   };
 

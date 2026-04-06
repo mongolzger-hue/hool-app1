@@ -11,7 +11,7 @@ export default function RecipeModal({ recipeId, onClose }) {
 
   const handleAddToCart = () => {
     addToCart(recipe.ingredients);
-    alert('Бүх орцууд сагсанд нэмэгдлээ! 🛒');
+    window.alert('Бүх орцууд сагсанд нэмэгдлээ! 🛒');
   };
 
   const share = () => {
@@ -25,7 +25,7 @@ export default function RecipeModal({ recipeId, onClose }) {
       navigator.clipboard.writeText(
         `${recipe.name}\n${recipe.description}\nОрцхон апп-с: ${window.location.href}`
       );
-      alert('Холбоосыг хуулсан! 📋');
+      window.alert('Холбоосыг хуулсан! 📋');
     }
   };
 

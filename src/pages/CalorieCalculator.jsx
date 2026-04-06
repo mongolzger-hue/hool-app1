@@ -10,7 +10,7 @@ export default function CalorieCalculator() {
   const [activity, setActivity] = useState('1.55');
   const [result, setResult] = useState(null);
   
-  const { user, updateProfile } = useAuth();
+  const { updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const calculate = () => {

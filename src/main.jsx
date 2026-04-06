@@ -7,7 +7,7 @@ import App from './App.jsx'
 // Check for updates every hour
 const updateSW = registerSW({
   onNeedRefresh() {
-    if (confirm('Сайтын шинэ хувилбар гарлаа. Шинэчлэх үү?')) {
+    if (window.confirm('Сайтын шинэ хувилбар гарлаа. Шинэчлэх үү?')) {
       updateSW(true);
     }
   },

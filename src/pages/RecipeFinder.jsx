@@ -15,7 +15,7 @@ export default function RecipeFinder() {
   const handleFile = async (file) => {
     if (!file) return;
     if (!file.type.startsWith('image/') && !file.name.match(/\.(jpg|jpeg|png|webp|heic)$/i)) {
-      alert('Зөвхөн зураг оруулна уу (JPG, PNG, HEIC)');
+      window.alert('Зөвхөн зураг оруулна уу (JPG, PNG, HEIC)');
       return;
     }
 
@@ -43,7 +43,7 @@ export default function RecipeFinder() {
         setResult(matched || recipes[Math.floor(Math.random() * recipes.length)]);
       } catch (error) {
         console.error("AI Analysis Failed:", error);
-        alert("Зураг шинжлэхэд алдаа гарлаа. Дахин оролдоно уу.");
+        window.alert("Зураг шинжлэхэд алдаа гарлаа. Дахин оролдоно уу.");
       } finally {
         setAnalyzing(false);
       }

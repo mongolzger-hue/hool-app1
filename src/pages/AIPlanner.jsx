@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useShopping } from '../context/ShoppingContext';
 import { generateMealPlan } from '../services/gemini';
@@ -7,7 +7,6 @@ import { generateMealPlan } from '../services/gemini';
 export default function AIPlanner() {
   const { user } = useAuth();
   const { addToCart } = useShopping();
-  const navigate = useNavigate();
   const [plan, setPlan] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [goal, setGoal] = useState('maintain'); // maintain, lose, gain
@@ -22,7 +21,7 @@ export default function AIPlanner() {
       setPlan(newPlan);
     } catch (error) {
       console.error("AI Planning Failed:", error);
-      alert("AI төлөвлөгөө үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.");
+      window.alert("AI төлөвлөгөө үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.");
     } finally {
       setIsGenerating(false);
     }
@@ -73,7 +72,7 @@ export default function AIPlanner() {
     // De-duplicate slightly (optional but good)
     const uniqueIngredients = [...new Set(allIngredients)];
     addToCart(uniqueIngredients);
-    alert('7 хоногийн бүх материалыг сагсанд нэмлээ! 🛒');
+    window.alert('7 хоногийн бүх материалыг сагсанд нэмлээ! 🛒');
   };
 
   const currentTargetCals = goal === 'lose' ? user.profile.lose : goal === 'gain' ? user.profile.gain : user.profile.tdee;
