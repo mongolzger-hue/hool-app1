@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { recipes } from '../data/recipes';
