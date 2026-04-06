@@ -21,6 +21,7 @@ export default function Footer() {
             <Link to="/videos">Бичлэг</Link>
             <Link to="/calculator">Тооцоолуур</Link>
             <Link to="/pricing">Багц</Link>
+            <Link to="/install" style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>Апп татах заавар</Link>
           </div>
           <div className="footer-links">
             <h4>Холбоо барих</h4>

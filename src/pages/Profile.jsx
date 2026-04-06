@@ -42,9 +42,18 @@ export default function Profile() {
                   </div>
                   <p className="join-date">Нэгдсэн: {user.joinDate}</p>
                 </div>
-                <button className="btn btn-secondary btn-block logout-btn" onClick={logout}>
-                  Гарах
-                </button>
+                <div className="profile-actions">
+                  <button 
+                    className="btn btn-outline btn-block" 
+                    onClick={() => navigate('/install')}
+                    style={{ marginBottom: '10px' }}
+                  >
+                    📲 Гар утсанд суулгах
+                  </button>
+                  <button className="btn btn-secondary btn-block logout-btn" onClick={logout}>
+                    Гарах
+                  </button>
+                </div>
               </div>
             </div>
 

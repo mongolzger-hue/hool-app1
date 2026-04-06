@@ -18,6 +18,7 @@ import Register from './pages/Register';
 import ShoppingList from './pages/ShoppingList';
 import Profile from './pages/Profile';
 import AIPlanner from './pages/AIPlanner';
+import InstallGuide from './pages/InstallGuide';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -44,6 +45,7 @@ function App() {
                   <Route path="/shopping-list" element={<ShoppingList />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/ai-planner" element={<AIPlanner />} />
+                  <Route path="/install" element={<InstallGuide />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
