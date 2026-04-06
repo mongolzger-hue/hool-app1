@@ -4,12 +4,31 @@ import { recipes } from '../data/recipes';
 import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const { favorites } = useFavorites();
   const navigate = useNavigate();
 
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!user && !loading) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="container section">Уншиж байна...</div>;
+  }
+
   if (!user) {
-    navigate('/login');
     return null;
   }
 
@@ -50,7 +69,7 @@ export default function Profile() {
                   >
                     📲 Гар утсанд суулгах
                   </button>
-                  <button className="btn btn-secondary btn-block logout-btn" onClick={logout}>
+                  <button className="btn btn-secondary btn-block logout-btn" onClick={handleLogout}>
                     Гарах
                   </button>
                 </div>
